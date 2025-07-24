@@ -17,33 +17,23 @@ app.get("/buscar", async (req, res) => {
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
-
     const page = await browser.newPage();
 
-    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
-
     const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}`;
-    console.log("Navegando a:", url);
-
     await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
-    console.log("Esperando selector...");
-    await page.waitForSelector('div.video-card_n', { timeout: 15000 });
+    // Esperar que carguen los enlaces con clase video-link__bqqch
+    await page.waitForSelector('a.video-link__bqqch', { timeout: 15000 });
 
-    const resultados = await page.$$eval('div.video-card_n', videos =>
-      videos.map(v => {
-        const anchor = v.querySelector("a.video-card_n-link");
-        const title = v.querySelector(".video-card_n-title")?.innerText.trim() || "Sin título";
-        const thumbnail = v.querySelector("img")?.src || null;
+    // Extraer datos
+    const resultados = await page.$$eval('a.video-link__bqqch', links =>
+      links.map(link => {
         return {
-          titulo: title,
-          enlace: anchor ? anchor.href : null,
-          thumbnail
+          titulo: link.textContent.trim(),
+          enlace: "https://ok.ru" + link.getAttribute('href')
         };
       })
     );
-
-    console.log(`Encontrados ${resultados.length} resultados`);
 
     res.json(resultados);
   } catch (error) {
