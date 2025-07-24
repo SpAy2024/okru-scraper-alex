@@ -19,7 +19,7 @@ app.get("/buscar", async (req, res) => {
     });
     const page = await browser.newPage();
 
-    const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}`;
+    const url = `https://ok.ru/video/kino?st.query=${encodeURIComponent(titulo)}`;
     await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
     await page.waitForSelector('a[href^="/video/"]', { timeout: 15000 });
