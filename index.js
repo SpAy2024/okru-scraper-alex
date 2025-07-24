@@ -9,64 +9,53 @@ app.use(cors());
 
 app.get("/buscar", async (req, res) => {
   const titulo = req.query.titulo;
-  if (!titulo) {
-    return res.status(400).json({ error: "Falta parámetro 'titulo'" });
-  }
+  if (!titulo) return res.status(400).json({ error: "Falta parámetro 'titulo'" });
 
   let browser;
   try {
     browser = await chromium.launch({
       headless: true,
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
     });
 
-    const context = await browser.newContext({
-      userAgent:
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
-    });
+    const page = await browser.newPage();
 
-    const page = await context.newPage();
     const url = `https://ok.ru/video/kino?st.query=${encodeURIComponent(titulo)}`;
+    await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30000 });
 
-    await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
-    await page.waitForSelector('a[href^="/video/"]', { timeout: 15000 });
+    await page.waitForSelector('a[href^="/video/"]', { timeout: 10000 });
 
-    const resultados = await page.$$eval('a[href^="/video/"]', links =>
-      links
-        .map(link => {
-          const texto = link.innerText || link.textContent || "";
-          const href = link.getAttribute("href") || "";
+    const resultados = await page.$$eval('a[href^="/video/"]', links => {
+      const videos = [];
+      const seen = new Set();
 
-          // Filtro básico
-          if (href && texto.toLowerCase().includes("latino")) {
-            return {
-              titulo: texto.trim(),
-              enlace: "https://ok.ru" + href
-            };
-          }
+      links.forEach(link => {
+        const href = link.getAttribute("href");
+        const title = link.textContent.trim();
 
-          return null;
-        })
-        .filter(Boolean)
-    );
+        if (href && !seen.has(href)) {
+          seen.add(href);
+          videos.push({
+            titulo: title || "Sin título",
+            enlace: "https://ok.ru" + href
+          });
+        }
+      });
 
-    if (resultados.length === 0) {
-      return res.status(404).json({ error: "No se encontraron resultados." });
-    }
+      return videos;
+    });
 
     res.json(resultados);
   } catch (error) {
     console.error("Error en /buscar:", error);
-    res.status(500).json({
-      error: "Error al buscar en OK.ru",
-      detalle: error.message
-    });
+    res.status(500).json({ error: "Error al buscar en OK.ru", detalle: error.message });
   } finally {
     if (browser) await browser.close();
   }
 });
 
 app.listen(PORT, () => console.log(`✅ Backend OK.ru activo en puerto ${PORT}`));
+
 
 
 
