@@ -14,7 +14,7 @@ app.get("/buscar", async (req, res) => {
   try {
     const browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
-    const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}&st.mode=SearchVideo`;
+    const url = `https://ok.ru/video?st.query=${encodeURIComponent(titulo)}&st.mode=SearchVideo`;
 
     await page.goto(url, { timeout: 60000 });
     await page.waitForSelector('div.video-card_cnt', { timeout: 15000 });
