@@ -20,14 +20,16 @@ app.get("/buscar", async (req, res) => {
 
     const page = await browser.newPage();
 
-    // Navegar a la URL de búsqueda con el título
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36');
+
     const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}`;
+    console.log("Navegando a:", url);
+
     await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
-    // Esperar que aparezcan las tarjetas de video
+    console.log("Esperando selector...");
     await page.waitForSelector('div.video-card_n', { timeout: 15000 });
 
-    // Extraer datos de cada video
     const resultados = await page.$$eval('div.video-card_n', videos =>
       videos.map(v => {
         const anchor = v.querySelector("a.video-card_n-link");
@@ -41,8 +43,11 @@ app.get("/buscar", async (req, res) => {
       })
     );
 
+    console.log(`Encontrados ${resultados.length} resultados`);
+
     res.json(resultados);
   } catch (error) {
+    console.error("Error en /buscar:", error);
     res.status(500).json({ error: "Error al buscar en OK.ru", detalle: error.message });
   } finally {
     if (browser) await browser.close();
