@@ -22,15 +22,14 @@ app.get("/buscar", async (req, res) => {
     const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}`;
     await page.goto(url, { waitUntil: "networkidle", timeout: 30000 });
 
-    // Esperar que carguen los enlaces con clase video-link__bqqch
-    await page.waitForSelector('a.video-link__bqqch', { timeout: 15000 });
+    await page.waitForSelector('a[href^="/video/"]', { timeout: 15000 });
 
-    // Extraer datos
-    const resultados = await page.$$eval('a.video-link__bqqch', links =>
+    const resultados = await page.$$eval('a[href^="/video/"]', links =>
       links.map(link => {
+        const title = link.innerText || link.textContent || "Sin título";
         return {
-          titulo: link.textContent.trim(),
-          enlace: "https://ok.ru" + link.getAttribute('href')
+          titulo: title.trim(),
+          enlace: "https://ok.ru" + link.getAttribute("href")
         };
       })
     );
@@ -45,4 +44,5 @@ app.get("/buscar", async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`✅ Backend OK.ru activo en puerto ${PORT}`));
+
 
