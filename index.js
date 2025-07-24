@@ -22,7 +22,7 @@ app.get("/buscar", async (req, res) => {
       "(KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36"
     );
 
-    const url = `https://ok.ru/video/showcase?st.query=${encodeURIComponent(titulo)}`;
+    const url = `https://ok.ru/feed?st.query=${encodeURIComponent(titulo)}`;
     await page.goto(url, { waitUntil: "networkidle", timeout: 40000 });
 
     // Scroll hacia abajo para cargar más resultados
