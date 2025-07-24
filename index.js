@@ -32,4 +32,5 @@ app.get("/", (req, res) => {
   res.send("Backend OK.ru activo.");
 });
 
-app.listen(PORT, () => console.log(`Servidor en http://localhost:${PORT}`));
+// ✅ Cambiar localhost por 0.0.0.0 para Railway o Render
+app.listen(PORT, '0.0.0.0', () => console.log(`Servidor escuchando en http://0.0.0.0:${PORT}`));
