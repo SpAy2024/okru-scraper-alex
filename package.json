@@ -1,0 +1,13 @@
+{
+  "name": "okru-movie-backend",
+  "version": "1.0.0",
+  "description": "Scraper backend para buscar películas en OK.ru",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "playwright": "^1.44.1"
+  }
+}
